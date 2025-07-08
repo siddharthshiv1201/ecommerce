@@ -1,9 +1,10 @@
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import userModel from "../models/userModel.js";
-const SECRET = "sometext";
 
+import dotenv from "dotenv";
+dotenv.config();
+const SECRET = process.env.SECRET;
 const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
