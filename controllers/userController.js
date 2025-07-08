@@ -19,7 +19,7 @@ const register = async (req, res) => {
     res.status(201).json(result);
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "Something went wrong" });
+    res.status(400).json({ message: "Something went wrong." });
   }
 };
 
