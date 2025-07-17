@@ -2,7 +2,10 @@ import mongoose from "mongoose";
 import express from "express";
 import dotenv from "dotenv";
 import userRouter from "./routes/userRoute.js";
+import productRouter from "./routes/productRoute.js";
 import cors from "cors";
+import orderRouter from "./routes/orderRoute.js";
+
 dotenv.config();
 
 const app = express();
@@ -29,5 +32,7 @@ const dbpass = encodeURIComponent(process.env.DBPASS);
   });
 
 app.use(express.json());
+app.use("/api/products", productRouter);
+app.use("/api/orders", orderRouter)
 
 app.use("/api/users", userRouter);

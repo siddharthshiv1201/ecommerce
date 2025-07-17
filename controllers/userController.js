@@ -5,6 +5,9 @@ import userModel from "../models/userModel.js";
 import dotenv from "dotenv";
 dotenv.config();
 const SECRET = process.env.SECRET;
+
+
+
 const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -23,15 +26,29 @@ const register = async (req, res) => {
   }
 };
 
-const userUpdate = async (req, res) => {
+const updateUser = async (req, res) => {
   try {
     const id = req.params.id;
-    const body = req.body;
-    const result = await userModel.findByIdAndUpdate(id, body);
-    res.status(200).json(result);
-  } catch (err) {
-    console.log(err);
-    res.status(200).json("Something went wrong");
+    const { name, email, password, role } = req.body;
+
+    const updateData = { name, email, role };
+
+    if (password && password.trim() !== "") {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updateData.password = hashedPassword;
+    }
+
+    const updatedUser = await userModel.findByIdAndUpdate(id, updateData, { new: true });
+
+    res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      updatedUser,
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false, message: "Something went wrong" });
   }
 };
 
@@ -64,6 +81,7 @@ const login = async (req, res) => {
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
         const userObj = {
+          _id: user._id,
           name: user.name,
           email: user.email,
           role: user.role,
@@ -81,6 +99,7 @@ const login = async (req, res) => {
     res.status(400).json({ message: "Something went wrong" });
   }
 };
+
 export const getUserProfile = async (req, res) => {
   try {
     const id = req.params.id
@@ -128,4 +147,23 @@ export const updateUserPassword = async (req, res) => {
     res.status(400).json({ message: "Something went wrong" });
   }
 }
-export { register, login, showUsers, userUpdate, userDelete };
+const addUserByAdmin = async (req, res) => {
+  try {
+    const {name, email, password, role} = req.body
+    const user = await userModel.findOne({email})
+    if(user) {
+      return res.status(400).json({message: "User already exists"})
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+    
+    const newUser = await userModel.create({name, email, password: hashedPassword, role})
+
+    res.status(201).json({message: "New User Added successfully", newUser, success: true})
+
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({message: "Something went wrong"})
+  }
+}
+export { register, login, showUsers, updateUser, userDelete, addUserByAdmin };
